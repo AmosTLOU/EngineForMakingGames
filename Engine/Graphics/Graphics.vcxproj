@@ -96,6 +96,11 @@
   <ItemGroup>
     <None Include="cRenderState.inl" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\External\OpenGlExtensions\OpenGlExtensions.vcxproj">
+      <Project>{433f6d20-943a-4d7b-bffe-bc9dfc932e6e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{8C6E7B33-30B8-432D-8F93-11AD97912BC6}</ProjectGuid>
