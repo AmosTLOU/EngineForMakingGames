@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{4ac91323-7e56-42b2-ba89-48433ea46b6a}</UniqueIdentifier>
+      <UniqueIdentifier>{dd34d00a-96d2-4c63-8ce2-705c129a30ae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -20,9 +20,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource Files\ExampleGame.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="Resource Files\MyGame.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource Files\Resource.h">
@@ -31,10 +29,10 @@
     <ClInclude Include="Resource Files\targetver.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="cExampleGame.h" />
+    <ClInclude Include="cMyGame.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cExampleGame.cpp" />
+    <ClCompile Include="cMyGame.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
   </ItemGroup>
 </Project>
