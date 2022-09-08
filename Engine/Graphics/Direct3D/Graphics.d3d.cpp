@@ -326,7 +326,7 @@ eae6320::cResult eae6320::Graphics::Initialize( const sInitializationParameters&
 			return result;
 		}
 	}
-
+	Logging::OutputMessage("Assignment01 MyGame's Graphics Project finished Initialization");
 	return result;
 }
 
@@ -388,7 +388,7 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 			}
 		}
 	}
-
+	Logging::OutputMessage("Assignment01 MyGame's Graphics Project finished CleanUp");
 	return result;
 }
 
