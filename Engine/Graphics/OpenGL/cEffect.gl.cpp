@@ -1,22 +1,17 @@
 #include "../cEffect.h"
 
-eae6320::Graphics::cShader* eae6320::Graphics::MyEffect::s_vertexShader = nullptr;
-eae6320::Graphics::cShader* eae6320::Graphics::MyEffect::s_fragmentShader = nullptr;
-GLuint eae6320::Graphics::MyEffect::s_programId = 0;
-eae6320::Graphics::cRenderState eae6320::Graphics::MyEffect::s_renderState;
-
-eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
+eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData(const std::string vertexShaderPath, const std::string fragmentShaderPath)
 {
-	auto result = eae6320::Results::Success;
+ 	auto result = eae6320::Results::Success;
 
-	if (!(result = eae6320::Graphics::cShader::Load("data/Shaders/Vertex/standard.shader",
-		s_vertexShader, eae6320::Graphics::eShaderType::Vertex)))
+	if (!(result = eae6320::Graphics::cShader::Load(vertexShaderPath,
+		vertexShader, eae6320::Graphics::eShaderType::Vertex)))
 	{
 		EAE6320_ASSERTF(false, "Can't initialize shading data without vertex shader");
 		return result;
 	}
-	if (!(result = eae6320::Graphics::cShader::Load("data/Shaders/Fragment/animatedcolor.shader",
-		s_fragmentShader, eae6320::Graphics::eShaderType::Fragment)))
+	if (!(result = eae6320::Graphics::cShader::Load(fragmentShaderPath,
+		fragmentShader, eae6320::Graphics::eShaderType::Fragment)))
 	{
 		EAE6320_ASSERTF(false, "Can't initialize shading data without fragment shader");
 		return result;
@@ -26,28 +21,33 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 		{
 			uint8_t renderStateBits = 0;
 
-			eae6320::Graphics::RenderStates::DisableAlphaTransparency(renderStateBits);
+			/*eae6320::Graphics::RenderStates::DisableAlphaTransparency(renderStateBits);
 			eae6320::Graphics::RenderStates::DisableDepthTesting(renderStateBits);
 			eae6320::Graphics::RenderStates::DisableDepthWriting(renderStateBits);
-			eae6320::Graphics::RenderStates::DisableDrawingBothTriangleSides(renderStateBits);
+			eae6320::Graphics::RenderStates::DisableDrawingBothTriangleSides(renderStateBits);*/
+			eae6320::Graphics::RenderStates::EnableAlphaTransparency(renderStateBits);
+			eae6320::Graphics::RenderStates::EnableDepthTesting(renderStateBits);
+			eae6320::Graphics::RenderStates::EnableDepthWriting(renderStateBits);
+			eae6320::Graphics::RenderStates::EnableDrawingBothTriangleSides(renderStateBits);
 
 			return renderStateBits;
 		}();
-		if (!(result = s_renderState.Initialize(renderStateBits)))
+		if (!(result = renderState.Initialize(renderStateBits)))
 		{
 			EAE6320_ASSERTF(false, "Can't initialize shading data without render state");
 			return result;
 		}
 	}
 
+	auto programId_copy = programId;
 	// Create a program
-	eae6320::cScopeGuard scopeGuard_program([&result]
+	eae6320::cScopeGuard scopeGuard_program([&result, &programId_copy]
 		{
 			if (!result)
 			{
-				if (s_programId != 0)
+				if (programId_copy != 0)
 				{
-					glDeleteProgram(s_programId);
+					glDeleteProgram(programId_copy);
 					const auto errorCode = glGetError();
 					if (errorCode != GL_NO_ERROR)
 					{
@@ -55,13 +55,14 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 						eae6320::Logging::OutputError("OpenGL failed to delete the program: %s",
 							reinterpret_cast<const char*>(gluErrorString(errorCode)));
 					}
-					s_programId = 0;
+					programId_copy = 0;
 				}
 			}
 		});
+	programId = programId_copy;
 	{
-		EAE6320_ASSERT(s_programId == 0);
-		s_programId = glCreateProgram();
+		EAE6320_ASSERT(programId == 0);
+		programId = glCreateProgram();
 		const auto errorCode = glGetError();
 		if (errorCode != GL_NO_ERROR)
 		{
@@ -71,7 +72,7 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 				reinterpret_cast<const char*>(gluErrorString(errorCode)));
 			return result;
 		}
-		else if (s_programId == 0)
+		else if (programId == 0)
 		{
 			result = eae6320::Results::Failure;
 			EAE6320_ASSERT(false);
@@ -83,8 +84,8 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 	{
 		// Vertex
 		{
-			EAE6320_ASSERT((s_vertexShader != nullptr) && (s_vertexShader->m_shaderId != 0));
-			glAttachShader(s_programId, s_vertexShader->m_shaderId);
+			EAE6320_ASSERT((vertexShader != nullptr) && (vertexShader->m_shaderId != 0));
+			glAttachShader(programId, vertexShader->m_shaderId);
 			const auto errorCode = glGetError();
 			if (errorCode != GL_NO_ERROR)
 			{
@@ -97,8 +98,8 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 		}
 		// Fragment
 		{
-			EAE6320_ASSERT((s_fragmentShader != nullptr) && (s_fragmentShader->m_shaderId != 0));
-			glAttachShader(s_programId, s_fragmentShader->m_shaderId);
+			EAE6320_ASSERT((fragmentShader != nullptr) && (fragmentShader->m_shaderId != 0));
+			glAttachShader(programId, fragmentShader->m_shaderId);
 			const auto errorCode = glGetError();
 			if (errorCode != GL_NO_ERROR)
 			{
@@ -112,7 +113,7 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 	}
 	// Link the program
 	{
-		glLinkProgram(s_programId);
+		glLinkProgram(programId);
 		const auto errorCode = glGetError();
 		if (errorCode == GL_NO_ERROR)
 		{
@@ -122,7 +123,7 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 			std::string linkInfo;
 			{
 				GLint infoSize;
-				glGetProgramiv(s_programId, GL_INFO_LOG_LENGTH, &infoSize);
+				glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoSize);
 				const auto errorCode = glGetError();
 				if (errorCode == GL_NO_ERROR)
 				{
@@ -136,7 +137,7 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 									delete[] info;
 								});
 							constexpr GLsizei* const dontReturnLength = nullptr;
-							glGetProgramInfoLog(s_programId, static_cast<GLsizei>(infoSize), dontReturnLength, info);
+							glGetProgramInfoLog(programId, static_cast<GLsizei>(infoSize), dontReturnLength, info);
 							const auto errorCode = glGetError();
 							if (errorCode == GL_NO_ERROR)
 							{
@@ -172,7 +173,7 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 			// Check to see if there were link errors
 			GLint didLinkingSucceed;
 			{
-				glGetProgramiv(s_programId, GL_LINK_STATUS, &didLinkingSucceed);
+				glGetProgramiv(programId, GL_LINK_STATUS, &didLinkingSucceed);
 				const auto errorCode = glGetError();
 				if (errorCode == GL_NO_ERROR)
 				{
@@ -204,7 +205,6 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 			return result;
 		}
 	}
-
 	return result;
 }
 
@@ -212,22 +212,23 @@ eae6320::cResult eae6320::Graphics::MyEffect::InitializeShadingData()
 void eae6320::Graphics::MyEffect::Bind()
 {
 	{
-		EAE6320_ASSERT(s_programId != 0);
-		glUseProgram(s_programId);
+		EAE6320_ASSERT(programId != 0);
+		glUseProgram(programId);
 		EAE6320_ASSERT(glGetError() == GL_NO_ERROR);
 	}
 	// Render state
 	{
-		s_renderState.Bind();
+		renderState.Bind();
 	}
 }
 
 
-void eae6320::Graphics::MyEffect::CleanUp(eae6320::cResult& result)
+eae6320::cResult eae6320::Graphics::MyEffect::CleanUp()
 {
-	if (s_programId != 0)
+	auto result = Results::Success;
+	if (programId != 0)
 	{
-		glDeleteProgram(s_programId);
+		glDeleteProgram(programId);
 		const auto errorCode = glGetError();
 		if (errorCode != GL_NO_ERROR)
 		{
@@ -239,16 +240,17 @@ void eae6320::Graphics::MyEffect::CleanUp(eae6320::cResult& result)
 			eae6320::Logging::OutputError("OpenGL failed to delete the program: %s",
 				reinterpret_cast<const char*>(gluErrorString(errorCode)));
 		}
-		s_programId = 0;
+		programId = 0;
 	}
-	if (s_vertexShader)
+	if (vertexShader)
 	{
-		s_vertexShader->DecrementReferenceCount();
-		s_vertexShader = nullptr;
+		vertexShader->DecrementReferenceCount();
+		vertexShader = nullptr;
 	}
-	if (s_fragmentShader)
+	if (fragmentShader)
 	{
-		s_fragmentShader->DecrementReferenceCount();
-		s_fragmentShader = nullptr;
+		fragmentShader->DecrementReferenceCount();
+		fragmentShader = nullptr;
 	}
+	return result;
 }

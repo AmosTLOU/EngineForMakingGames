@@ -8,27 +8,16 @@
 
 // Includes
 //=========
-
-#include "Configuration.h"
-#include "Graphics.h"
-#include "cConstantBuffer.h"
-#include "ConstantBufferFormats.h"
 #include "cRenderState.h"
 #include "cShader.h"
-#include "sContext.h"
-#include "VertexFormats.h"
-#include "cVertexFormat.h"
 
 #include <Engine/Asserts/Asserts.h>
-#include <Engine/Concurrency/cEvent.h>
 #include <Engine/Results/Results.h>
 #include <Engine/Logging/Logging.h>
-#include <Engine/Platform/Platform.h>
 #include <Engine/ScopeGuard/cScopeGuard.h>
-#include <Engine/Time/Time.h>
-#include <Engine/UserOutput/UserOutput.h>
+#include <Engine/Assets/ReferenceCountedAssets.h>
 #include <new>
-#include <utility>
+#include <string>
 
 namespace eae6320
 {
@@ -37,29 +26,48 @@ namespace eae6320
 		class MyEffect
 		{
 		public:
-			static eae6320::cResult InitializeShadingData();
-#ifdef EAE6320_PLATFORM_GL
-			static void Bind();
-#endif
-#ifdef EAE6320_PLATFORM_D3D
-			static void Bind(ID3D11DeviceContext* direct3dImmediateContext);
-#endif			
-			static void CleanUp(eae6320::cResult& result);
-			
+			EAE6320_ASSETS_DECLAREREFERENCECOUNTINGFUNCTIONS()
+				EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(MyEffect)
+
+				static eae6320::cResult FactoryMethod(MyEffect*& pEffect, const std::string vertexShaderPath, const std::string fragmentShaderPath)
+			{
+				auto result = Results::Success;
+				// Allocate
+				{
+					pEffect = new MyEffect();
+					if (!pEffect)
+					{
+						result = Results::OutOfMemory;
+						EAE6320_ASSERTF(false, "Couldn't allocate memory for the effect");
+						return result;
+					}
+				}
+				// Initialize
+				if (!(result = pEffect->InitializeShadingData(vertexShaderPath, fragmentShaderPath)))
+				{
+					EAE6320_ASSERTF(false, "Initialization of new effect failed");
+					return result;
+				}
+				return result;
+			}
+			void Bind();
+
+		private:
+			MyEffect() { m_referenceCount = 1; }
+			~MyEffect() { CleanUp(); }
+			eae6320::cResult InitializeShadingData(const std::string vertexShaderPath, const std::string fragmentShaderPath);
+			eae6320::cResult CleanUp();
+
 		private:
 			// Shading Data
 			//-------------
-#ifdef EAE6320_PLATFORM_GL
-			static eae6320::Graphics::cShader* s_vertexShader;
-			static eae6320::Graphics::cShader* s_fragmentShader;
-			static GLuint s_programId;
-			static eae6320::Graphics::cRenderState s_renderState;
+			eae6320::Graphics::cRenderState renderState;
+			eae6320::Graphics::cShader* vertexShader = nullptr;
+			eae6320::Graphics::cShader* fragmentShader = nullptr;
+#ifdef EAE6320_PLATFORM_GL		
+			GLuint programId = 0;
 #endif
-#ifdef EAE6320_PLATFORM_D3D
-			static eae6320::Graphics::cShader* s_vertexShader;
-			static eae6320::Graphics::cShader* s_fragmentShader;
-			static eae6320::Graphics::cRenderState s_renderState;
-#endif
+			EAE6320_ASSETS_DECLAREREFERENCECOUNT()
 		};
 	}
 }

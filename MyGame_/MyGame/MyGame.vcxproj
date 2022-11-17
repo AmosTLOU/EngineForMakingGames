@@ -46,6 +46,9 @@
     <ProjectReference Include="..\..\Engine\Math\Math.vcxproj">
       <Project>{999c3d5f-7f79-4bd7-ae21-92eeed0c5962}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\Engine\NetworkingClient\NetworkingClient.vcxproj">
+      <Project>{ae67cca5-72b7-4660-8bc1-cfb2268244d7}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\Engine\Physics\Physics.vcxproj">
       <Project>{30e6bb9f-138d-4b44-9733-869263f7bad5}</Project>
     </ProjectReference>
@@ -137,6 +140,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "$(TargetPath)" "$(GameInstallDir)$(TargetFileName)" /y</Command>
@@ -159,6 +163,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "$(TargetPath)" "$(GameInstallDir)$(TargetFileName)" /y</Command>
@@ -185,6 +190,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "$(TargetPath)" "$(GameInstallDir)$(TargetFileName)" /y</Command>
@@ -211,6 +217,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "$(TargetPath)" "$(GameInstallDir)$(TargetFileName)" /y</Command>

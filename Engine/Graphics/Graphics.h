@@ -9,7 +9,8 @@
 //=========
 
 #include "Configuration.h"
-
+#include "cMesh.h"
+#include "cEffect.h"
 #include <cstdint>
 #include <Engine/Results/Results.h>
 
@@ -34,6 +35,11 @@ namespace eae6320
 		// of how the application submits the total elapsed times
 		// for the frame currently being submitted
 		void SubmitElapsedTime( const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_simulationTime );
+
+		void SubmitBackgroundColor(float r, float g, float b, float a);
+		void SubmitMeshEffectPair(std::vector<MyMesh*> i_meshes, std::vector<MyEffect*> i_effects);
+		void SubmitCameraData(float pos_x);
+		
 
 		// When the application is ready to submit data for a new frame
 		// it should call this before submitting anything
@@ -66,9 +72,13 @@ namespace eae6320
 	#endif
 #endif
 		};
-
-		cResult Initialize( const sInitializationParameters& i_initializationParameters );
+		cResult Initialize( const sInitializationParameters i_initializationParameters );
 		cResult CleanUp();
+
+		eae6320::cResult TryDecrementReferenceCount(eae6320::Graphics::MyMesh*& p);
+		eae6320::cResult TryDecrementReferenceCount(eae6320::Graphics::MyEffect*& p);
+		eae6320::cResult TryIncrementReferenceCount(eae6320::Graphics::MyMesh*& p);
+		eae6320::cResult TryIncrementReferenceCount(eae6320::Graphics::MyEffect*& p);
 	}
 }
 

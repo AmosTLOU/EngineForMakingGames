@@ -10,22 +10,67 @@
 
 #include <Engine/Application/iApplication.h>
 #include <Engine/Results/Results.h>
+#include <Engine/Graphics/cMesh.h>
+#include <Engine/Graphics/cEffect.h>
+#include <Engine/Physics/sRigidbodyState.h>
 
 #if defined( EAE6320_PLATFORM_WINDOWS )
 	#include "Resource Files/Resource.h"
 #endif
 
-// Class Declaration
-//==================
 
 namespace eae6320
 {
-	class cMyGame final : public Application::iApplication
+	class RigidbodyObject
 	{
-		// Inherited Implementation
-		//=========================
+	public:
+		eae6320::Physics::sRigidBodyState rbState;
+	};
+
+	class RenderableObject : public RigidbodyObject
+	{
+	public:
+		RenderableObject(std::vector<eae6320::Graphics::MyMesh*>& i_meshes, std::vector<eae6320::Graphics::MyEffect*>& i_effects)
+		{
+			meshes = i_meshes;
+			effects = i_effects;
+		}
+		
+		std::vector<eae6320::Graphics::MyMesh*> meshes;
+		std::vector<eae6320::Graphics::MyEffect*> effects;
+	};
+
+	class MyCamera : public RigidbodyObject
+	{
+	};
+
+	enum MyGameState
+	{
+		default,
+		removeOneObject,
+		changeOneEffect,
+		changeObjectsMesh
+	};
+
+	class MyGame final : public Application::iApplication
+	{
+	public:
+		MyGame()
+		{ 
+			myGameState = MyGameState::default;
+			mainObjIndex = 0;
+			camera.rbState.position.z = 5.0f;
+		};
+		~MyGame() { CleanUpGraphicsContent(); };
 
 	private:
+		RenderableObject* GetMainObject()
+		{
+			if (0 <= mainObjIndex && mainObjIndex < objects.size())
+				return objects[mainObjIndex];
+			else
+				return nullptr;
+		}
 
 		// Configuration
 		//--------------
@@ -36,7 +81,7 @@ namespace eae6320
 		// so that it's easy to tell at a glance what kind of build is running.
 		const char* GetMainWindowName() const final
 		{
-			return "Haonan(Amos) Dong's Assignment 01"
+			return "Haonan Dong"
 				" -- "
 #if defined( EAE6320_PLATFORM_D3D )
 				"Direct3D"
@@ -47,7 +92,7 @@ namespace eae6320
 				" -- Debug"
 #endif
 			;
-		}
+		}		
 		// Window classes are almost always identified by name;
 		// there is a unique "ATOM" associated with them,
 		// but in practice Windows expects to use the class name as an identifier.
@@ -71,15 +116,26 @@ namespace eae6320
 
 		// Run
 		//----
-
 		void UpdateBasedOnInput() final;
 
 		// Initialize / Clean Up
 		//----------------------
-
+		void InitGraphicsContent();
 		cResult Initialize() final;
+		void CleanUpGraphicsContent();
 		cResult CleanUp() final;
 
+		virtual void UpdateSimulationBasedOnInput() override;
+		virtual void UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate) override;
+		virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
+	
+	public:
+		MyGameState myGameState;
+	private:
+		std::vector<RenderableObject*> objects;
+		size_t mainObjIndex;
+		MyCamera camera;
+		unsigned int counter = 0;
 	};
 }
 

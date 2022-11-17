@@ -246,6 +246,17 @@ function cbAssetTypeInfo.ShouldTargetBeBuilt( i_lastWriteTime_builtAsset )
 	return false
 end
 
+-- Mesh Asset Type
+--------------------
+
+NewAssetTypeInfo( "meshes",
+	{
+		GetBuilderRelativePath = function()
+			return "MeshBuilder.exe"
+		end
+	}
+)
+
 -- Shader Asset Type
 --------------------
 

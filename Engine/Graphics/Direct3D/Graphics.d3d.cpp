@@ -35,7 +35,7 @@ namespace
 	ID3D11DepthStencilView* s_depthStencilView = nullptr;
 
 	// Constant buffer object
-	eae6320::Graphics::cConstantBuffer s_constantBuffer_frame( eae6320::Graphics::ConstantBufferTypes::Frame );
+	eae6320::Graphics::cConstantBuffer s_constantBuffer_frame(eae6320::Graphics::ConstantBufferTypes::Frame);
 
 	// Submission Data
 	//----------------
@@ -71,7 +71,7 @@ namespace
 
 namespace
 {
-	eae6320::cResult InitializeViews( const unsigned int i_resolutionWidth, const unsigned int i_resolutionHeight );
+	eae6320::cResult InitializeViews(const unsigned int i_resolutionWidth, const unsigned int i_resolutionHeight);
 }
 
 // Interface
@@ -80,17 +80,17 @@ namespace
 // Submission
 //-----------
 
-void eae6320::Graphics::SubmitElapsedTime( const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_simulationTime )
+void eae6320::Graphics::SubmitElapsedTime(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_simulationTime)
 {
-	EAE6320_ASSERT( s_dataBeingSubmittedByApplicationThread );
+	EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
 	auto& constantData_frame = s_dataBeingSubmittedByApplicationThread->constantData_frame;
 	constantData_frame.g_elapsedSecondCount_systemTime = i_elapsedSecondCount_systemTime;
 	constantData_frame.g_elapsedSecondCount_simulationTime = i_elapsedSecondCount_simulationTime;
 }
 
-eae6320::cResult eae6320::Graphics::WaitUntilDataForANewFrameCanBeSubmitted( const unsigned int i_timeToWait_inMilliseconds )
+eae6320::cResult eae6320::Graphics::WaitUntilDataForANewFrameCanBeSubmitted(const unsigned int i_timeToWait_inMilliseconds)
 {
-	return Concurrency::WaitForEvent( s_whenDataForANewFrameCanBeSubmittedFromApplicationThread, i_timeToWait_inMilliseconds );
+	return Concurrency::WaitForEvent(s_whenDataForANewFrameCanBeSubmittedFromApplicationThread, i_timeToWait_inMilliseconds);
 }
 
 eae6320::cResult eae6320::Graphics::SignalThatAllDataForAFrameHasBeenSubmitted()
@@ -105,63 +105,63 @@ void eae6320::Graphics::RenderFrame()
 {
 	// Wait for the application loop to submit data to be rendered
 	{
-		if ( Concurrency::WaitForEvent( s_whenAllDataHasBeenSubmittedFromApplicationThread ) )
+		if (Concurrency::WaitForEvent(s_whenAllDataHasBeenSubmittedFromApplicationThread))
 		{
 			// Switch the render data pointers so that
 			// the data that the application just submitted becomes the data that will now be rendered
-			std::swap( s_dataBeingSubmittedByApplicationThread, s_dataBeingRenderedByRenderThread );
+			std::swap(s_dataBeingSubmittedByApplicationThread, s_dataBeingRenderedByRenderThread);
 			// Once the pointers have been swapped the application loop can submit new data
-			if ( !s_whenDataForANewFrameCanBeSubmittedFromApplicationThread.Signal() )
+			if (!s_whenDataForANewFrameCanBeSubmittedFromApplicationThread.Signal())
 			{
-				EAE6320_ASSERTF( false, "Couldn't signal that new graphics data can be submitted" );
-				Logging::OutputError( "Failed to signal that new render data can be submitted" );
-				UserOutput::Print( "The renderer failed to signal to the application that new graphics data can be submitted."
-					" The application is probably in a bad state and should be exited" );
+				EAE6320_ASSERTF(false, "Couldn't signal that new graphics data can be submitted");
+				Logging::OutputError("Failed to signal that new render data can be submitted");
+				UserOutput::Print("The renderer failed to signal to the application that new graphics data can be submitted."
+					" The application is probably in a bad state and should be exited");
 				return;
 			}
 		}
 		else
 		{
-			EAE6320_ASSERTF( false, "Waiting for the graphics data to be submitted failed" );
-			Logging::OutputError( "Waiting for the application loop to submit data to be rendered failed" );
-			UserOutput::Print( "The renderer failed to wait for the application to submit data to be rendered."
-				" The application is probably in a bad state and should be exited" );
+			EAE6320_ASSERTF(false, "Waiting for the graphics data to be submitted failed");
+			Logging::OutputError("Waiting for the application loop to submit data to be rendered failed");
+			UserOutput::Print("The renderer failed to wait for the application to submit data to be rendered."
+				" The application is probably in a bad state and should be exited");
 			return;
 		}
 	}
 
 	auto* const direct3dImmediateContext = sContext::g_context.direct3dImmediateContext;
-	EAE6320_ASSERT( direct3dImmediateContext );
+	EAE6320_ASSERT(direct3dImmediateContext);
 
 	// Every frame an entirely new image will be created.
 	// Before drawing anything, then, the previous image will be erased
 	// by "clearing" the image buffer (filling it with a solid color)
 	{
-		EAE6320_ASSERT( s_renderTargetView );
+		EAE6320_ASSERT(s_renderTargetView);
 
 		// Black is usually used
 		constexpr float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		direct3dImmediateContext->ClearRenderTargetView( s_renderTargetView, clearColor );
+		direct3dImmediateContext->ClearRenderTargetView(s_renderTargetView, clearColor);
 	}
 	// In addition to the color buffer there is also a hidden image called the "depth buffer"
 	// which is used to make it less important which order draw calls are made.
 	// It must also be "cleared" every frame just like the visible color buffer.
 	{
-		EAE6320_ASSERT( s_depthStencilView );
+		EAE6320_ASSERT(s_depthStencilView);
 
 		constexpr float clearToFarDepth = 1.0f;
 		constexpr uint8_t stencilValue = 0;	// Arbitrary if stencil isn't used
-		direct3dImmediateContext->ClearDepthStencilView( s_depthStencilView, D3D11_CLEAR_DEPTH, clearToFarDepth, stencilValue );
+		direct3dImmediateContext->ClearDepthStencilView(s_depthStencilView, D3D11_CLEAR_DEPTH, clearToFarDepth, stencilValue);
 	}
 
-	EAE6320_ASSERT( s_dataBeingRenderedByRenderThread );
+	EAE6320_ASSERT(s_dataBeingRenderedByRenderThread);
 	auto* const dataRequiredToRenderFrame = s_dataBeingRenderedByRenderThread;
 
 	// Update the frame constant buffer
 	{
 		// Copy the data from the system memory that the application owns to GPU memory
 		auto& constantData_frame = dataRequiredToRenderFrame->constantData_frame;
-		s_constantBuffer_frame.Update( &constantData_frame );
+		s_constantBuffer_frame.Update(&constantData_frame);
 	}
 
 	// Bind the shading data
@@ -175,11 +175,11 @@ void eae6320::Graphics::RenderFrame()
 	// (or "swapped" with the "front buffer", which is the image that is actually being displayed)
 	{
 		auto* const swapChain = sContext::g_context.swapChain;
-		EAE6320_ASSERT( swapChain );
+		EAE6320_ASSERT(swapChain);
 		constexpr unsigned int swapImmediately = 0;
 		constexpr unsigned int presentNextFrame = 0;
-		const auto result = swapChain->Present( swapImmediately, presentNextFrame );
-		EAE6320_ASSERT( SUCCEEDED( result ) );
+		const auto result = swapChain->Present(swapImmediately, presentNextFrame);
+		EAE6320_ASSERT(SUCCEEDED(result));
 	}
 
 	// After all of the data that was submitted for this frame has been used
@@ -194,71 +194,71 @@ void eae6320::Graphics::RenderFrame()
 // Initialize / Clean Up
 //----------------------
 
-eae6320::cResult eae6320::Graphics::Initialize( const sInitializationParameters& i_initializationParameters )
+eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& i_initializationParameters)
 {
 	auto result = Results::Success;
 
 	// Initialize the platform-specific context
-	if ( !( result = sContext::g_context.Initialize( i_initializationParameters ) ) )
+	if (!(result = sContext::g_context.Initialize(i_initializationParameters)))
 	{
-		EAE6320_ASSERTF( false, "Can't initialize Graphics without context" );
+		EAE6320_ASSERTF(false, "Can't initialize Graphics without context");
 		return result;
 	}
 	// Initialize the platform-independent graphics objects
 	{
-		if ( result = s_constantBuffer_frame.Initialize() )
+		if (result = s_constantBuffer_frame.Initialize())
 		{
 			// There is only a single frame constant buffer that is reused
 			// and so it can be bound at initialization time and never unbound
 			s_constantBuffer_frame.Bind(
 				// In our class both vertex and fragment shaders use per-frame constant data
-				static_cast<uint_fast8_t>( eShaderType::Vertex ) | static_cast<uint_fast8_t>( eShaderType::Fragment ) );
+				static_cast<uint_fast8_t>(eShaderType::Vertex) | static_cast<uint_fast8_t>(eShaderType::Fragment));
 		}
 		else
 		{
-			EAE6320_ASSERTF( false, "Can't initialize Graphics without frame constant buffer" );
+			EAE6320_ASSERTF(false, "Can't initialize Graphics without frame constant buffer");
 			return result;
 		}
 	}
 	// Initialize the events
 	{
-		if ( !( result = s_whenAllDataHasBeenSubmittedFromApplicationThread.Initialize( Concurrency::EventType::ResetAutomaticallyAfterBeingSignaled ) ) )
+		if (!(result = s_whenAllDataHasBeenSubmittedFromApplicationThread.Initialize(Concurrency::EventType::ResetAutomaticallyAfterBeingSignaled)))
 		{
-			EAE6320_ASSERTF( false, "Can't initialize Graphics without event for when data has been submitted from the application thread" );
+			EAE6320_ASSERTF(false, "Can't initialize Graphics without event for when data has been submitted from the application thread");
 			return result;
 		}
-		if ( !( result = s_whenDataForANewFrameCanBeSubmittedFromApplicationThread.Initialize( Concurrency::EventType::ResetAutomaticallyAfterBeingSignaled,
-			Concurrency::EventState::Signaled ) ) )
+		if (!(result = s_whenDataForANewFrameCanBeSubmittedFromApplicationThread.Initialize(Concurrency::EventType::ResetAutomaticallyAfterBeingSignaled,
+			Concurrency::EventState::Signaled)))
 		{
-			EAE6320_ASSERTF( false, "Can't initialize Graphics without event for when data can be submitted from the application thread" );
+			EAE6320_ASSERTF(false, "Can't initialize Graphics without event for when data can be submitted from the application thread");
 			return result;
 		}
 	}
 	// Initialize the views
 	{
-		if ( !( result = InitializeViews( i_initializationParameters.resolutionWidth, i_initializationParameters.resolutionHeight ) ) )
+		if (!(result = InitializeViews(i_initializationParameters.resolutionWidth, i_initializationParameters.resolutionHeight)))
 		{
-			EAE6320_ASSERTF( false, "Can't initialize Graphics without the views" );
+			EAE6320_ASSERTF(false, "Can't initialize Graphics without the views");
 			return result;
 		}
 	}
 	// Initialize the shading data
 	{
-		if ( !( result = MyEffect::InitializeShadingData() ) )
+		if (!(result = MyEffect::InitializeShadingData()))
 		{
-			EAE6320_ASSERTF( false, "Can't initialize Graphics without the shading data" );
+			EAE6320_ASSERTF(false, "Can't initialize Graphics without the shading data");
 			return result;
 		}
 	}
 	// Initialize the geometry
 	{
-		if ( !( result = MyMesh::InitializeGeometry() ) )
+		if (!(result = MyMesh::InitializeGeometry()))
 		{
-			EAE6320_ASSERTF( false, "Can't initialize Graphics without the geometry data" );
+			EAE6320_ASSERTF(false, "Can't initialize Graphics without the geometry data");
 			return result;
 		}
 	}
-	Logging::OutputMessage("Assignment01 MyGame's Graphics Project finished Initialization");
+	Logging::OutputMessage("Assignment02 MyGame's Graphics Project finished Initialization");
 	return result;
 }
 
@@ -266,12 +266,12 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 {
 	auto result = Results::Success;
 
-	if ( s_renderTargetView )
+	if (s_renderTargetView)
 	{
 		s_renderTargetView->Release();
 		s_renderTargetView = nullptr;
 	}
-	if ( s_depthStencilView )
+	if (s_depthStencilView)
 	{
 		s_depthStencilView->Release();
 		s_depthStencilView = nullptr;
@@ -284,28 +284,28 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 
 	{
 		const auto result_constantBuffer_frame = s_constantBuffer_frame.CleanUp();
-		if ( !result_constantBuffer_frame )
+		if (!result_constantBuffer_frame)
 		{
-			EAE6320_ASSERT( false );
-			if ( result )
+			EAE6320_ASSERT(false);
+			if (result)
 			{
 				result = result_constantBuffer_frame;
 			}
 		}
 	}
-	
+
 	{
 		const auto result_context = sContext::g_context.CleanUp();
-		if ( !result_context )
+		if (!result_context)
 		{
-			EAE6320_ASSERT( false );
-			if ( result )
+			EAE6320_ASSERT(false);
+			if (result)
 			{
 				result = result_context;
 			}
 		}
 	}
-	Logging::OutputMessage("Assignment01 MyGame's Graphics Project finished CleanUp");
+	Logging::OutputMessage("Assignment02 MyGame's Graphics Project finished CleanUp");
 	return result;
 }
 
@@ -314,33 +314,33 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 
 namespace
 {
-	eae6320::cResult InitializeViews( const unsigned int i_resolutionWidth, const unsigned int i_resolutionHeight )
+	eae6320::cResult InitializeViews(const unsigned int i_resolutionWidth, const unsigned int i_resolutionHeight)
 	{
 		auto result = eae6320::Results::Success;
 
 		ID3D11Texture2D* backBuffer = nullptr;
 		ID3D11Texture2D* depthBuffer = nullptr;
-		eae6320::cScopeGuard scopeGuard( [&backBuffer, &depthBuffer]
+		eae6320::cScopeGuard scopeGuard([&backBuffer, &depthBuffer]
 			{
 				// Regardless of success or failure the two texture resources should be released
 				// (if the function is successful the views will hold internal references to the resources)
-				if ( backBuffer )
+				if (backBuffer)
 				{
 					backBuffer->Release();
 					backBuffer = nullptr;
 				}
-				if ( depthBuffer )
+				if (depthBuffer)
 				{
 					depthBuffer->Release();
-					depthBuffer= nullptr;
+					depthBuffer = nullptr;
 				}
-			} );
+			});
 
 		auto& g_context = eae6320::Graphics::sContext::g_context;
 		auto* const direct3dDevice = g_context.direct3dDevice;
-		EAE6320_ASSERT( direct3dDevice );
+		EAE6320_ASSERT(direct3dDevice);
 		auto* const direct3dImmediateContext = g_context.direct3dImmediateContext;
-		EAE6320_ASSERT( direct3dImmediateContext );
+		EAE6320_ASSERT(direct3dImmediateContext);
 
 		// Create a "render target view" of the back buffer
 		// (the back buffer was already created by the call to D3D11CreateDeviceAndSwapChain(),
@@ -350,24 +350,24 @@ namespace
 			// Get the back buffer from the swap chain
 			{
 				constexpr unsigned int bufferIndex = 0;	// This must be 0 since the swap chain is discarded
-				const auto d3dResult = g_context.swapChain->GetBuffer( bufferIndex, __uuidof( ID3D11Texture2D ), reinterpret_cast<void**>( &backBuffer ) );
-				if ( FAILED( d3dResult ) )
+				const auto d3dResult = g_context.swapChain->GetBuffer(bufferIndex, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
+				if (FAILED(d3dResult))
 				{
 					result = eae6320::Results::Failure;
-					EAE6320_ASSERTF( false, "Couldn't get the back buffer from the swap chain (HRESULT %#010x)", d3dResult );
-					eae6320::Logging::OutputError( "Direct3D failed to get the back buffer from the swap chain (HRESULT %#010x)", d3dResult );
+					EAE6320_ASSERTF(false, "Couldn't get the back buffer from the swap chain (HRESULT %#010x)", d3dResult);
+					eae6320::Logging::OutputError("Direct3D failed to get the back buffer from the swap chain (HRESULT %#010x)", d3dResult);
 					return result;
 				}
 			}
 			// Create the view
 			{
 				constexpr D3D11_RENDER_TARGET_VIEW_DESC* const accessAllSubResources = nullptr;
-				const auto d3dResult = direct3dDevice->CreateRenderTargetView( backBuffer, accessAllSubResources, &s_renderTargetView );
-				if ( FAILED( d3dResult ) )
+				const auto d3dResult = direct3dDevice->CreateRenderTargetView(backBuffer, accessAllSubResources, &s_renderTargetView);
+				if (FAILED(d3dResult))
 				{
 					result = eae6320::Results::Failure;
-					EAE6320_ASSERTF( false, "Couldn't create render target view (HRESULT %#010x)", d3dResult );
-					eae6320::Logging::OutputError( "Direct3D failed to create the render target view (HRESULT %#010x)", d3dResult );
+					EAE6320_ASSERTF(false, "Couldn't create render target view (HRESULT %#010x)", d3dResult);
+					eae6320::Logging::OutputError("Direct3D failed to create the render target view (HRESULT %#010x)", d3dResult);
 					return result;
 				}
 			}
@@ -407,24 +407,24 @@ namespace
 				// The GPU renders to the depth/stencil buffer and so there is no initial data
 				// (like there would be with a traditional texture loaded from disk)
 				constexpr D3D11_SUBRESOURCE_DATA* const noInitialData = nullptr;
-				const auto d3dResult = direct3dDevice->CreateTexture2D( &textureDescription, noInitialData, &depthBuffer );
-				if ( FAILED( d3dResult ) )
+				const auto d3dResult = direct3dDevice->CreateTexture2D(&textureDescription, noInitialData, &depthBuffer);
+				if (FAILED(d3dResult))
 				{
 					result = eae6320::Results::Failure;
-					EAE6320_ASSERTF( false, "Couldn't create depth buffer (HRESULT %#010x)", d3dResult );
-					eae6320::Logging::OutputError( "Direct3D failed to create the depth buffer resource (HRESULT %#010x)", d3dResult );
+					EAE6320_ASSERTF(false, "Couldn't create depth buffer (HRESULT %#010x)", d3dResult);
+					eae6320::Logging::OutputError("Direct3D failed to create the depth buffer resource (HRESULT %#010x)", d3dResult);
 					return result;
 				}
 			}
 			// Create the view
 			{
 				constexpr D3D11_DEPTH_STENCIL_VIEW_DESC* const noSubResources = nullptr;
-				const auto d3dResult = direct3dDevice->CreateDepthStencilView( depthBuffer, noSubResources, &s_depthStencilView );
-				if ( FAILED( d3dResult ) )
+				const auto d3dResult = direct3dDevice->CreateDepthStencilView(depthBuffer, noSubResources, &s_depthStencilView);
+				if (FAILED(d3dResult))
 				{
 					result = eae6320::Results::Failure;
-					EAE6320_ASSERTF( false, "Couldn't create depth stencil view (HRESULT %#010x)", d3dResult );
-					eae6320::Logging::OutputError( "Direct3D failed to create the depth stencil view (HRESULT %#010x)", d3dResult );
+					EAE6320_ASSERTF(false, "Couldn't create depth stencil view (HRESULT %#010x)", d3dResult);
+					eae6320::Logging::OutputError("Direct3D failed to create the depth stencil view (HRESULT %#010x)", d3dResult);
 					return result;
 				}
 			}
@@ -433,7 +433,7 @@ namespace
 		// Bind the views
 		{
 			constexpr unsigned int renderTargetCount = 1;
-			direct3dImmediateContext->OMSetRenderTargets( renderTargetCount, &s_renderTargetView, s_depthStencilView );
+			direct3dImmediateContext->OMSetRenderTargets(renderTargetCount, &s_renderTargetView, s_depthStencilView);
 		}
 		// Specify that the entire render target should be visible
 		{
@@ -449,13 +449,13 @@ namespace
 
 					return viewPort;
 				}();
-				viewPort.Width = static_cast<float>( i_resolutionWidth );
-				viewPort.Height = static_cast<float>( i_resolutionHeight );
+				viewPort.Width = static_cast<float>(i_resolutionWidth);
+				viewPort.Height = static_cast<float>(i_resolutionHeight);
 
 				return viewPort;
 			}();
 			constexpr unsigned int viewPortCount = 1;
-			direct3dImmediateContext->RSSetViewports( viewPortCount, &viewPort );
+			direct3dImmediateContext->RSSetViewports(viewPortCount, &viewPort);
 		}
 
 		return result;

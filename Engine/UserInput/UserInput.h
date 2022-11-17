@@ -31,6 +31,9 @@ namespace eae6320
 			// These values are what the Windows-specific function expects, for simplicity
 			enum eKeyCodes
 			{
+				LeftMouse = 0x01,
+				RightMouse = 0x02,
+
 				Left = 0x25,
 				Up = 0x26,
 				Right = 0x27,
