@@ -7,9 +7,12 @@
 #include <ws2tcpip.h>
 
 #define IP "192.168.0.240"
-#define PORT "3490" // the port clients will be connnecting to
-#define BACKLOG 10 // how many connections are waiting
-#define MAXDATASIZE 100 // the largest number of bytes we can get for one time
+// the port clients will be connnecting to
+#define PORT "3490" 
+// how many connections are waiting
+#define BACKLOG 10 
+// the largest number of bytes we can get for one time
+#define MAXDATASIZE 100 
 
 
 namespace Networking
@@ -21,7 +24,6 @@ namespace Networking
 		static void StartServer();
 		static int EndServer();
 	protected:	
-
 	private:
 		//void sigchld_handler(int s);		
 		static void* get_in_addr(struct sockaddr* sa);
@@ -29,7 +31,7 @@ namespace Networking
 		
 		
 	public:
-		static std::string RecvMsg;
+		static std::string RecvMsg[2];
 		
 	protected:
 	private:		

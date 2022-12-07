@@ -27,7 +27,7 @@ namespace eae6320
 		{
 		public:
 			EAE6320_ASSETS_DECLAREREFERENCECOUNTINGFUNCTIONS()
-				EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(MyEffect)
+			EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(MyEffect)
 
 				static eae6320::cResult FactoryMethod(MyEffect*& pEffect, const std::string vertexShaderPath, const std::string fragmentShaderPath)
 			{

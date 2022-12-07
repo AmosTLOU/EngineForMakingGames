@@ -11,6 +11,7 @@
 #include <ws2tcpip.h>
 
 #include "cMyNetworkClient.h"
+#include <Engine/NetworkingServer/cMyNetworkServer.h>
 
 using namespace std;
 
@@ -40,11 +41,11 @@ void* Networking::MyNetworkClient::get_in_addr(struct sockaddr* sa)
 
 int Networking::MyNetworkClient::StartClient()
 {
-    WSADATA wsaData; // if this doesn't work
-    //WSAData wsaData; // then try this instead
+    WSADATA wsaData; 
+    // if the above doesn't work, try the following instead
+    //WSAData wsaData;
 
     // MAKEWORD(1,1) for Winsock 1.1, MAKEWORD(2,0) for Winsock 2.0:
-
     if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0)
     {
         fprintf(stderr, "WSAStartup failed.\n");
@@ -86,7 +87,7 @@ int Networking::MyNetworkClient::RunClient(std::string i_sendMsg)
     int numbytes;
     char buf[MAXDATASIZE];
 
-    // 用迴圈取得全部的結果，並先連線到能成功連線的
+    // Iterate all the results and connect to the first one that is available
     for (p = servinfo_client; p != NULL; p = p->ai_next) {
         if ((sockfd_client = static_cast<int>(socket(p->ai_family, p->ai_socktype,
             p->ai_protocol))) == -1) {
@@ -123,7 +124,6 @@ int Networking::MyNetworkClient::RunClient(std::string i_sendMsg)
     }
 
     buf[numbytes] = '\0';
-    RecvMsg = buf;
     printf("client: received '%s'\n", buf);
 
     return 0;
@@ -132,7 +132,7 @@ int Networking::MyNetworkClient::RunClient(std::string i_sendMsg)
 
 int Networking::MyNetworkClient::EndClient()
 {
-    freeaddrinfo(servinfo_client); // 全部皆以這個 structure 完成
+    freeaddrinfo(servinfo_client);
     closesocket(sockfd_client);
     return 0;
 }

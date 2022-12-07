@@ -138,7 +138,9 @@ void eae6320::Graphics::SubmitMeshEffectPair(std::vector<MyMesh*> i_meshes, std:
 void eae6320::Graphics::SubmitCameraData(float pos_x)
 {
 	auto& g_transform_worldToCamera = s_dataBeingSubmittedByApplicationThread->constantData_frame.g_transform_worldToCamera;
-	g_transform_worldToCamera = Math::cMatrix_transformation::CreateWorldToCameraTransform(Math::cQuaternion(), Math::sVector(0, 0, pos_x));
+	g_transform_worldToCamera = Math::cMatrix_transformation::CreateWorldToCameraTransform(
+		Math::cQuaternion(0.0f, eae6320::Math::sVector(0.0f, 0.0f, 1.0f)),
+		Math::sVector(0, 0, pos_x));
 
 	auto& g_transform_cameraToProjected = s_dataBeingSubmittedByApplicationThread->constantData_frame.g_transform_cameraToProjected;
 	g_transform_cameraToProjected = Math::cMatrix_transformation::CreateCameraToProjectedTransform_perspective(

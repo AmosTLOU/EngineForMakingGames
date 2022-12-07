@@ -199,7 +199,7 @@ namespace
 				"If you are seeing this message there are %i shaders that haven't been deleted. You probably have a reference counting bug!", m_shaders.size() );
 			eae6320::Logging::OutputError( "Not every shader was released. The program will now crash!" );
 			constexpr int* const invalidAddress = 0x0;
-			*invalidAddress = 123;	// Intentional crash! You have a bug that must be fixed!
+     			*invalidAddress = 123;	// Intentional crash! You have a bug that must be fixed!
 		}
 	}
 }

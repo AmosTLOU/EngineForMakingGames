@@ -126,8 +126,10 @@ namespace eae6320
 
 			virtual void GetDefaultInitialResolution( uint16_t& o_width, uint16_t& o_height ) const
 			{
-				o_width = 512;
-				o_height = 512;
+				/*o_width = 512;
+				o_height = 512;*/
+				o_width = 768;
+				o_height = 768;
 			}
 
 			// The application's simulation is always updated in fixed increments of time

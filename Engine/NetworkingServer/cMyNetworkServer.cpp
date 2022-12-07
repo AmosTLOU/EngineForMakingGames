@@ -14,6 +14,7 @@
 
 using namespace std;
 
+std::string Networking::MyNetworkServer::RecvMsg[2] = {"xx", "xx"};
 
 //void Networking::MyNetwork::sigchld_handler(int s)
 //{
@@ -41,8 +42,9 @@ void Networking::MyNetworkServer::StartServer()
 
 int Networking::MyNetworkServer::RunServer()
 {
-    WSADATA wsaData; // if this doesn't work
-    //WSAData wsaData; // then try this instead
+    WSADATA wsaData; 
+    // if the above doesn't work, try the following instead
+    //WSAData wsaData;
 
     // MAKEWORD(1,1) for Winsock 1.1, MAKEWORD(2,0) for Winsock 2.0:
 
@@ -52,9 +54,11 @@ int Networking::MyNetworkServer::RunServer()
         exit(1);
     }
 
-    int sockfd, new_fd; // 在 sock_fd 進行 listen，new_fd 是新的連線
+    // listen on sock_fd, new_fd is the new connection
+    int sockfd, new_fd; 
     struct addrinfo hints, * servinfo, * p;
-    struct sockaddr_storage their_addr; // 連線者的位址資訊 
+    // the address info of the connector
+    struct sockaddr_storage their_addr;
     socklen_t sin_size;
     //struct sigaction sa;
     int yes = 1;
@@ -69,7 +73,8 @@ int Networking::MyNetworkServer::RunServer()
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    //hints.ai_flags = AI_PASSIVE; // 使用我的 IP
+    // AI_PASSIVE means using my IP
+    //hints.ai_flags = AI_PASSIVE;
 
     if ((rv = getaddrinfo(IP, PORT, &hints, &servinfo)) != 0) {
         const char* errorMsg = reinterpret_cast<char*>(gai_strerror(rv));
@@ -77,7 +82,7 @@ int Networking::MyNetworkServer::RunServer()
         return 1;
     }
 
-    // 以迴圈找出全部的結果，並綁定（bind）到第一個能用的結果
+    // Iterate all the sockets and bind the first one that is available
     for (p = servinfo; p != NULL; p = p->ai_next) 
     {
         if ((sockfd = static_cast<int>(socket(p->ai_family, p->ai_socktype,
@@ -110,7 +115,7 @@ int Networking::MyNetworkServer::RunServer()
         return 2;
     }
 
-    freeaddrinfo(servinfo); // 全部都用這個 structure
+    freeaddrinfo(servinfo);
 
     if (listen(sockfd, BACKLOG) == -1) 
     {
@@ -118,7 +123,8 @@ int Networking::MyNetworkServer::RunServer()
         exit(1);
     }
 
-    //sa.sa_handler = sigchld_handler; // 收拾全部死掉的 processes
+    //// release all the dead processes
+    //sa.sa_handler = sigchld_handler;
     //sigemptyset(&sa.sa_mask);
     //sa.sa_flags = SA_RESTART;
 
@@ -129,7 +135,7 @@ int Networking::MyNetworkServer::RunServer()
 
     printf("server: waiting for connections...\n");
 
-    // 主要的 accept() 迴圈
+    // The main accept() iteration
     while (1)
     {
         sin_size = sizeof their_addr;
@@ -146,8 +152,10 @@ int Networking::MyNetworkServer::RunServer()
         curClientIP = s;
         printf("server: got connection from %s\n", s);
 
-        //if (!fork()) { // 這個是 child process
-        //    //close(sockfd); // child 不需要 listener
+        //// a child process
+        //if (!fork()) { 
+        //    // child doesn't need a listener
+        //    //close(sockfd); 
         //    if (send(new_fd, "Hello, world!", 13, 0) == -1)
         //        perror("send");
         //    //close(new_fd);
@@ -201,8 +209,18 @@ int Networking::MyNetworkServer::RunServer()
         curClientIndex = buf[0];
         printf("sever: received '%s'\n", buf);
 
+        int RecvMsgIndex = curClientIndex[0] - '0';
+        if (buf[1] == 'F')
+        {
+            RecvMsg[RecvMsgIndex][0] = (buf[2] == '0') ? 'N' : 'F';
+        }
+        else
+        {
+            RecvMsg[RecvMsgIndex][1] = (buf[2] == '0') ? 'N' : buf[1];
+        }
+
         // send
-        int mode = 0;
+        int mode = 1;
         string curClient, lastClient;
         if (mode == 0)
         {
@@ -221,12 +239,13 @@ int Networking::MyNetworkServer::RunServer()
         }
         else
         {
-            if (send(new_fd, lastMessage.c_str(), static_cast<int>(lastMessage.length()), 0) == -1)
+            string messageToClient = (curClient == "0") ? RecvMsg[1] : RecvMsg[0];
+            if (send(new_fd, messageToClient.c_str(), static_cast<int>(messageToClient.length()), 0) == -1)
                 perror("send");
         }
         lastClientIndex = curClientIndex;
         lastClientIP = curClientIP;
-        lastMessage = buf;
+        /*lastMessage = buf[1];*/
 
         closesocket(new_fd);
     }

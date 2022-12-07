@@ -115,6 +115,56 @@ namespace eae6320
 				}
 				return result;
 			}
+
+			static eae6320::cResult CreateStaticMesh(MyMesh*& pMesh, float percent)
+			{
+				auto result = Results::Success;
+				// Allocate
+				{
+					pMesh = new MyMesh();
+					if (!pMesh)
+					{
+						result = Results::OutOfMemory;
+						EAE6320_ASSERTF(false, "Couldn't allocate memory for the mesh");
+						return result;
+					}
+				}
+
+				// Manual Generation
+				std::vector<eae6320::Graphics::VertexFormats::sVertex_mesh> vertexData;
+				float w = 0.3f;
+				float h = 0.06f;
+				std::vector<uint16_t> indexData;
+				{
+					vertexData.resize(4);
+					vertexData[0].x = 0.0f - 0.5f * w;
+					vertexData[0].y = 0.0f - 0.5f * h;
+					vertexData[0].z = 0.0f;
+					vertexData[1].x = w * percent - 0.5f * w;
+					vertexData[1].y = 0.0f - 0.5f * h;
+					vertexData[1].z = 0.0f;
+					vertexData[2].x = 0.0f - 0.5f * w;
+					vertexData[2].y = h - 0.5f * h;
+					vertexData[2].z = 0.0f;
+					vertexData[3].x = w * percent - 0.5f * w;
+					vertexData[3].y = h - 0.5f * h;
+					vertexData[3].z = 0.0f;
+					indexData.resize(6);
+					indexData[0] = 0;
+					indexData[1] = 1;
+					indexData[2] = 2;
+					indexData[3] = 1;
+					indexData[4] = 3;
+					indexData[5] = 2;
+				}
+				// Initialize
+				if (!(result = pMesh->InitializeGeometry(vertexData, indexData)))
+				{
+					EAE6320_ASSERTF(false, "Initialization of new mesh failed");
+					return result;
+				}
+				return result;
+			}
 			void Draw();
 
 		private:

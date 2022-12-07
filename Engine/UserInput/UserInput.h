@@ -39,6 +39,11 @@ namespace eae6320
 				Right = 0x27,
 				Down = 0x28,
 
+				A = 0x41,
+				W = 0x57,
+				D = 0x44,
+				S = 0x53,
+
 				Space = 0x20,
 
 				Escape = 0x1b,
